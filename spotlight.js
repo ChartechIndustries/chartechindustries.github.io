@@ -1,0 +1,18 @@
+(()=>{
+const discoveries=[
+ {headline:'every fish<br>here is <em>dead.</em>',title:'Aquarium Where Every Fish Is Dead',description:'An aquarium frozen in ice.',place:'Kesennuma, Japan',author:'Bodhi Schulz',image:'/editorial-assets/spot-frozen-aquarium-in-miyagi.jpg',slug:'frozen-aquarium-in-miyagi',position:'60% center'},
+ {headline:'take the<br><em>scenic</em><br>underpass.',title:'South London’s Most Notable Street Art Location',description:'A whole world of street art beneath Waterloo.',place:'Leake Street, London',author:'Wayfarer',image:'/editorial-assets/spot-south-london-s-most-notable-street-art-location.jpg',slug:'south-london-s-most-notable-street-art-location',position:'center'},
+ {headline:'a cathedral.<br><em>carved</em><br>underground.',title:'The Japanese Quarry That Became an Underground Illuminated Cathedral',description:'Seventy years of carving. One extraordinary space.',place:'Utsunomiya, Japan',author:null,image:'/spots/oya.jpg',slug:'tochigi-underground-quarry',position:'center'}
+];
+class SpotHighlight extends HTMLElement{
+ connectedCallback(){if(this.ready)return;this.ready=true;this.current=0;
+ this.innerHTML=`<section class="sp-feature" aria-label="Featured discoveries" aria-roledescription="carousel"><div class="sp-stage"></div><div class="sp-controls"><button class="sp-step" data-sp-step="-1" aria-label="Previous featured discovery">←</button><div class="sp-choices" aria-label="Choose a featured discovery">${discoveries.map((d,i)=>`<button class="sp-choice" data-sp-choice="${i}" aria-label="Show ${d.title}" aria-pressed="${i===0}"><img src="${d.image}" alt="" loading="lazy"></button>`).join('')}</div><button class="sp-step" data-sp-step="1" aria-label="Next featured discovery">→</button></div></section>`;
+ this.render();this.addEventListener('click',e=>{const step=e.target.closest('[data-sp-step]'),choice=e.target.closest('[data-sp-choice]');if(step)this.select(this.current+Number(step.dataset.spStep));if(choice)this.select(Number(choice.dataset.spChoice))});
+ if('IntersectionObserver' in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){this.classList.add('sp-awaiting');this.observer=new IntersectionObserver(entries=>{if(entries[0].isIntersecting){this.classList.remove('sp-awaiting');this.classList.add('sp-revealed');this.observer.disconnect()}},{threshold:.15});this.observer.observe(this)}
+ }
+ select(n){const next=(n+discoveries.length)%discoveries.length;if(next===this.current)return;this.current=next;this.render();this.querySelectorAll('[data-sp-choice]').forEach((b,i)=>b.setAttribute('aria-pressed',i===next))}
+ render(){const d=discoveries[this.current];this.querySelector('.sp-stage').innerHTML=`<div class="sp-scene" data-discovery="${this.current}" role="group" aria-roledescription="slide" aria-label="${this.current+1} of 3: ${d.title}"><div class="sp-art"><img src="${d.image}" alt="${d.title}" style="object-position:${d.position}" decoding="async"><span class="sp-dot-edge" aria-hidden="true"></span></div><div class="sp-copy"><h2>${d.headline}</h2><p class="sp-description">${d.description}</p><p class="sp-place">${d.place}${d.author?`<span>Published by ${d.author}</span>`:''}</p><a class="sp-cta" href="https://www.deepspot.io/blog/${d.slug}" target="_blank" rel="noopener">take me there <span aria-hidden="true">↗</span></a></div></div>`}
+ disconnectedCallback(){this.observer?.disconnect()}
+}
+customElements.define('deepspot-spotlight',SpotHighlight);
+})();
